@@ -4,11 +4,13 @@
 #include <RH_ASK.h>
 #include <SPI.h> // Not actually used but needed to compile
 
-#define DHTPIN 4  // what digital pin we're connected to
-#define ID "THOR" // ok 1809191730 v1.1.0, was ODIN
-//#define ID "AMUN" // ok 1809190100 v1.1.0, was INKE
-//#define ID "ZEUS" // ok 1809191730 v1.1.0, was PURL
+#define DHTPIN 4 // what digital pin we're connected to
+//#define ID "THOR" // ok 1809191730 v1.1.0, was ODIN => THOR
+//#define ID "AMUN" // ok 1809190100 v1.1.0, was INKE => AMUN
+#define ID "ZEUS" // ok 1809191730 v1.1.0, was PURL => ZEUS
 #define MSGFORMAT "%s0HU%03dTE%+04d"
+#define DELAY_DHT22 2750
+#define DELAY_YL69 10000
 
 #define DHTTYPE DHT22 // DHT 22  (AM2302), AM2321
 
@@ -22,6 +24,9 @@ int valueIterator = 0;
 int valuesNum = sizeof(humidities) / sizeof(int);
 bool initialized = false;
 bool reinitialized = false;
+long timerDebug = 0;
+long timerDHT22 = 0;
+long timerYL69 = 0;
 
 // Connect pin 1 (on the left) of the sensor to +5V
 // NOTE: If using a board with 3.3V logic like an Arduino Due connect pin 1
@@ -38,6 +43,8 @@ DHT dht(DHTPIN, DHTTYPE);
 
 void printValues(char *msgBuffer, int h, int t)
 {
+  Serial.print((millis() - timerDebug) / 1000);
+  Serial.print("s -> ");
   Serial.print("HU ");
   Serial.print(h);
   Serial.print(" TE ");
@@ -45,30 +52,12 @@ void printValues(char *msgBuffer, int h, int t)
   Serial.print(" Message: ");
   Serial.print(msgBuffer);
   Serial.println();
+
+  timerDebug = millis();
 }
 
-void setup()
+void handleDHT22()
 {
-  Serial.begin(9600);
-  Serial.print("DHT22 Humidity and Temperature: ");
-  Serial.println(ID);
-  Serial.print("Send average of ");
-  Serial.print(valuesNum);
-  Serial.println(" measurements.");
-
-  dht.begin();
-
-  if (!driver.init())
-  {
-    Serial.println("Failed to initialize RadioHead!");
-  }
-}
-
-void loop()
-{
-  // every loop may take 3s => 3s * 60 values = send value every 3 min => ~480 values per day
-  delay(2750);
-
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   int h = dht.readHumidity();
@@ -128,7 +117,7 @@ void loop()
 
   // send value when changed (>= 1.00°C / >= 1.00%) and first set of measurements is complete
   //  if (reinitialized && (abs(hAvgFloat - prevHumidity) >= 1 || abs(tAvgFloat - prevTemperature) >= 1)) {
-  // send value every full set (~ once a minute)
+  // send value every full set (~ once every 3 minutes)
   if (reinitialized)
   {
     char msgBuffer[16];
@@ -145,5 +134,45 @@ void loop()
     reinitialized = false;
 
     printValues(msgBuffer, hAvg, tAvg);
+  }
+}
+
+void handleYL69()
+{
+}
+
+void setup()
+{
+  Serial.begin(9600);
+  Serial.print("DHT22 Humidity and Temperature: ");
+  Serial.println(ID);
+  Serial.print("Send average of ");
+  Serial.print(valuesNum);
+  Serial.println(" measurements.");
+
+  dht.begin();
+
+  if (!driver.init())
+  {
+    Serial.println("Failed to initialize RadioHead!");
+  }
+}
+
+void loop()
+{
+  // every loop may take 3s => 3s * 60 values = send value every 3 min => ~480 values per day
+  if (millis() - timerDHT22 > DELAY_DHT22)
+  {
+    handleDHT22();
+
+    timerDHT22 = millis();
+  }
+
+  // every loop may take 3s => 3s * 60 values = send value every 3 min => ~480 values per day
+  if (millis() - timerYL69 > DELAY_YL69)
+  {
+    handleYL69();
+
+    timerYL69 = millis();
   }
 }
