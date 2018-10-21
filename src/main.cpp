@@ -1,4 +1,4 @@
-// v2.0.0
+// v2.1.0
 
 #include <DHT.h>
 #include <RH_ASK.h>
@@ -15,16 +15,21 @@
 #define MODE MODE_PRODUCTION
 #endif
 
+//#define ENABLE_YL69 0x1
+
 #define DHTPIN 4 // what digital pin we're connected to
 //#define ID "THOR" // ok 1810211235 v2.0.0, was ODIN => THOR
-//#define ID "AMUN" // ok 1810211245 v2.1.0, was INKE => AMUN
+#define ID "AMUN" // ok 1810211445 v2.1.0, was INKE => AMUN
 //#define ID "ZEUS" // ok 1810211120 v2.0.0, was PURL => ZEUS
 #define MSGFORMAT_DHT "%s0HU%03dTE%+04d"
-#define MSGFORMAT_YL69 "%sMO%04dMV%+04d"
 #define DELAY_DHT 2750
+
+#ifdef ENABLE_YL69
 #define DELAY_YL69 900000 // 15 Minutes
+#define MSGFORMAT_YL69 "%sMO%04dMV%+04d"
 #define YL69PIN PIN_A1
 #define YL69PIN_VCC 2
+#endif
 
 #define DHTTYPE DHT22 // DHT 22  (AM2302), AM2321
 
@@ -41,8 +46,11 @@ bool initialized_dht = false;
 bool reinitialized_dht = false;
 long timerDebugDHT = 0;
 long timerDHT = 0;
+
+#ifdef ENABLE_YL69
 long timerYL69 = 0;
 bool initialized_yl69 = false;
+#endif
 
 // Connect pin 1 (on the left) of the sensor to +5V
 // NOTE: If using a board with 3.3V logic like an Arduino Due connect pin 1
@@ -155,6 +163,7 @@ void handleDHT()
   }
 }
 
+#ifdef ENABLE_YL69
 void handleYL69()
 {
   l.l("Enable sensor... ");
@@ -188,6 +197,7 @@ void handleYL69()
   l.l(msgBuffer);
   l.ln();
 }
+#endif
 
 void setup()
 {
@@ -201,11 +211,13 @@ void setup()
   // DHT22
   dht.begin();
 
+#ifdef ENABLE_YL69
   // YL69
   pinMode(YL69PIN, INPUT);
   pinMode(YL69PIN_VCC, OUTPUT);
 
   digitalWrite(YL69PIN_VCC, LOW);
+#endif
 
   delay(100);
 
@@ -225,6 +237,7 @@ void loop()
     timerDHT = millis();
   }
 
+#ifdef ENABLE_YL69
   // every loop may take 3s => 3s * 60 values = send value every 3 min => ~480 values per day
   if (initialized_yl69 == false || millis() - timerYL69 > DELAY_YL69)
   {
@@ -233,4 +246,5 @@ void loop()
     timerYL69 = millis();
     initialized_yl69 = true;
   }
+#endif
 }
