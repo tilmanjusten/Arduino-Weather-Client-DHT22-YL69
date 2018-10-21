@@ -1,8 +1,9 @@
 // v1.1.0
 
-#include "DHT.h"
+#include <DHT.h>
 #include <RH_ASK.h>
 #include <SPI.h> // Not actually used but needed to compile
+#include <Log.h>
 
 #define DHTPIN 4 // what digital pin we're connected to
 //#define ID "THOR" // ok 1809191730 v1.1.0, was ODIN => THOR
@@ -15,6 +16,7 @@
 #define DHTTYPE DHT22 // DHT 22  (AM2302), AM2321
 
 RH_ASK driver;
+Log l(LOG_MODE_VERBOSE);
 
 float prevHumidity = 0;
 float prevTemperature = 0;
@@ -43,15 +45,15 @@ DHT dht(DHTPIN, DHTTYPE);
 
 void printValues(char *msgBuffer, int h, int t)
 {
-  Serial.print((millis() - timerDebug) / 1000);
-  Serial.print("s -> ");
-  Serial.print("HU ");
-  Serial.print(h);
-  Serial.print(" TE ");
-  Serial.print(t);
-  Serial.print(" Message: ");
-  Serial.print(msgBuffer);
-  Serial.println();
+  l.l((millis() - timerDebug) / 1000);
+  l.l("s -> ");
+  l.l("HU ");
+  l.l(h);
+  l.l(" TE ");
+  l.l(t);
+  l.l(" Message: ");
+  l.l(msgBuffer);
+  l.ln();
 
   timerDebug = millis();
 }
@@ -73,7 +75,7 @@ void handleDHT22()
   // Check if any reads failed and exit early (to try again).
   if (isnan(h) || isnan(t))
   {
-    Serial.println("Failed to read from DHT sensor!");
+    l.ln("Failed to read from DHT sensor!");
 
     return;
   }
@@ -88,14 +90,14 @@ void handleDHT22()
     // set initialized after first iteration loop
     if (initialized == false)
     {
-      Serial.println("First iteration loop completed. Begin to send data.");
+      l.ln("First iteration loop completed. Begin to send data.");
 
       initialized = true;
     }
 
     if (initialized == true && reinitialized == false)
     {
-      Serial.println("Update full set of measurements.");
+      l.ln("Update full set of measurements.");
 
       reinitialized = true;
     }
@@ -144,17 +146,17 @@ void handleYL69()
 void setup()
 {
   Serial.begin(9600);
-  Serial.print("DHT22 Humidity and Temperature: ");
-  Serial.println(ID);
-  Serial.print("Send average of ");
-  Serial.print(valuesNum);
-  Serial.println(" measurements.");
+  l.l("DHT22 Humidity and Temperature: ");
+  l.ln(ID);
+  l.l("Send average of ");
+  l.l(valuesNum);
+  l.ln(" measurements.");
 
   dht.begin();
 
   if (!driver.init())
   {
-    Serial.println("Failed to initialize RadioHead!");
+    l.ln("Failed to initialize RadioHead!");
   }
 }
 
