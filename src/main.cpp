@@ -1,9 +1,10 @@
-// v2.1.0
+// v2.2.0
 
 #include <DHT.h>
 #include <RH_ASK.h>
 #include <SPI.h> // Not actually used but needed to compile
 #include <Log.h>
+#include <LowPower.h>
 
 #ifndef MODE_PRODUCTION
 #define MODE_PRODUCTION 0x0
@@ -15,17 +16,17 @@
 #define MODE MODE_PRODUCTION
 #endif
 
-//#define ENABLE_YL69 0x1
+// #define ENABLE_YL69 0x1
 
 #define DHTPIN 4 // what digital pin we're connected to
-//#define ID "THOR" // ok 1810211235 v2.0.0, was ODIN => THOR
-#define ID "AMUN" // ok 1810211445 v2.1.0, was INKE => AMUN
-//#define ID "ZEUS" // ok 1810211120 v2.0.0, was PURL => ZEUS
+//#define ID "THOR" // ok 1810211235 v2.0.0, was ODIN => THOR (Schlafzimmer)
+#define ID "AMUN" // ok 1810261800 v2.2.0, was INKE => AMUN (Badezimmer)
+//#define ID "ZEUS" // ok 1810211120 v2.0.0, was PURL => ZEUS (Wohnzimmer)
 #define MSGFORMAT_DHT "%s0HU%03dTE%+04d"
 #define DELAY_DHT 2750
 
 #ifdef ENABLE_YL69
-#define DELAY_YL69 900000 // 15 Minutes
+#define DELAY_YL69 1800000 // 30 Minutes
 #define MSGFORMAT_YL69 "%sMO%04dMV%+04d"
 #define YL69PIN PIN_A1
 #define YL69PIN_VCC 2
@@ -34,7 +35,7 @@
 #define DHTTYPE DHT22 // DHT 22  (AM2302), AM2321
 
 RH_ASK driver;
-Log l(LOG_MODE_SILENT);
+Log l(MODE == MODE_PRODUCTION ? LOG_MODE_SILENT : LOG_MODE_VERBOSE);
 
 float prevHumidity = 0;
 float prevTemperature = 0;
@@ -64,6 +65,19 @@ bool initialized_yl69 = false;
 // tweak the timings for faster processors.  This parameter is no longer needed
 // as the current DHT reading algorithm adjusts itself to work on faster procs.
 DHT dht(DHTPIN, DHTTYPE);
+
+void sleep(period_t sleepTime)
+{
+  LowPower.idle(
+      sleepTime,
+      ADC_OFF,
+      TIMER2_OFF,
+      TIMER1_OFF,
+      TIMER0_ON,
+      SPI_OFF,
+      USART0_OFF,
+      TWI_OFF);
+}
 
 void printValuesDHT(char *msgBuffer, int h, int t)
 {
@@ -229,6 +243,8 @@ void setup()
 
 void loop()
 {
+  sleep(SLEEP_2S);
+
   // every loop may take 3s => 3s * 60 values = send value every 3 min => ~480 values per day
   if (millis() - timerDHT > DELAY_DHT)
   {
