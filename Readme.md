@@ -45,6 +45,8 @@ Required libraries:
 - Wires
 - USB cable USB-A to USB Micro
 - Power supply (1A)
+- Plastic case
+- Cork board
 
 ### Wiring
 
