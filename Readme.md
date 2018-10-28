@@ -45,11 +45,11 @@ Required libraries:
 - Wires
 - USB cable USB-A to USB Micro
 - Power supply (1A)
-- Plastic case
+- Plastic case (~&nbsp;70&times;55&times;15&nbsp;mm)
 - Cork board
 
 ### Wiring
 
-[Fritzing Sketch](docs/Arduino-Nano-433MHz-DHT22-YL69_Wiring.fzz)
+[See Fritzing Sketch](docs/Arduino-Nano-433MHz-DHT22-YL69_Wiring.fzz)
 
 <img src="docs/img/Arduino-Nano-433MHz-DHT22-YL69_Wiring.png" alt="Fritzing Sketch">
