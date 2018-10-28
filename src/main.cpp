@@ -16,12 +16,17 @@
 #define MODE MODE_PRODUCTION
 #endif
 
-// #define ENABLE_YL69 0x1
+#define ENABLE_YL69 0x1
+
+// Receiver pin
+#define RXPIN 11
+// Transmitter pin
+#define TXPIN 12
 
 #define DHTPIN 4 // what digital pin we're connected to
-//#define ID "THOR" // ok 1810211235 v2.0.0, was ODIN => THOR (Schlafzimmer)
-#define ID "AMUN" // ok 1810261800 v2.2.0, was INKE => AMUN (Badezimmer)
-//#define ID "ZEUS" // ok 1810211120 v2.0.0, was PURL => ZEUS (Wohnzimmer)
+//#define ID "THOR" // ok 1010271705 v2.2.0, was ODIN => THOR (Schlafzimmer)
+//#define ID "AMUN" // ok 1810261800 v2.2.0, was INKE => AMUN (Badezimmer)
+#define ID "ZEUS" // ok 1010271710 v2.2.0, was PURL => ZEUS (Wohnzimmer)
 #define MSGFORMAT_DHT "%s0HU%03dTE%+04d"
 #define DELAY_DHT 2750
 
@@ -34,7 +39,7 @@
 
 #define DHTTYPE DHT22 // DHT 22  (AM2302), AM2321
 
-RH_ASK driver;
+RH_ASK driver(2000, RXPIN, TXPIN);
 Log l(MODE == MODE_PRODUCTION ? LOG_MODE_SILENT : LOG_MODE_VERBOSE);
 
 float prevHumidity = 0;
